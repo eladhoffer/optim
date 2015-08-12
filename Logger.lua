@@ -32,7 +32,7 @@ Example:
 require 'xlua'
 local Logger = torch.class('optim.Logger')
 
-function Logger:__init(filename, timestamp)
+function Logger:__init(filename, timestamp, append)
    if filename then
       self.name = filename
       os.execute('mkdir ' .. (sys.uname() ~= 'windows' and '-p ' or '') .. ' "' .. paths.dirname(filename) .. '"')
@@ -40,14 +40,20 @@ function Logger:__init(filename, timestamp)
          -- append timestamp to create unique log file
          filename = filename .. '-'..os.date("%Y_%m_%d_%X")
       end
-      self.file = io.open(filename,'w')
+      if append then
+         self.file = io.open(filename,'a')
+         self.empty = false
+      else
+         self.file = io.open(filename,'w')
+         self.empty = true
+      end
       self.epsfile = self.name .. '.eps'
    else
       self.file = io.stdout
       self.name = 'stdout'
       print('<Logger> warning: no path provided, logging to std out')
+      self.empty = true
    end
-   self.empty = true
    self.symbols = {}
    self.styles = {}
    self.names = {}
